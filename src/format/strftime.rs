@@ -173,7 +173,46 @@ impl<'a> StrftimeItems<'a> {
     /// Creates a new parsing iterator from the `strftime`-like format string.
     pub fn new(s: &'a str) -> StrftimeItems<'a> {
         static FMT_NONE: [Item<'static>; 0] = [];
-        StrftimeItems { remainder: s, recons: &FMT_NONE }
+        StrftimeItems {
+            remainder: s,
+            recons: &FMT_NONE,
+        }
+    }
+}
+
+/// TODO
+#[derive(Clone, Debug, PartialEq)]
+pub struct Strftime<'a> {
+    items: Vec<Item<'a>>,
+}
+
+impl<'a> Strftime<'a> {
+    /// TODO
+    pub fn parse(s: &'a str) -> Result<Self, FormatParseError> {
+        Ok(Strftime {
+            items: StrftimeItems::new(s)
+                .map(|item| match item {
+                    Item::Error => Err(FormatParseError::Error),
+                    i => Ok(i),
+                })
+                .collect::<Result<Vec<Item<'a>>, FormatParseError>>()?,
+        })
+    }
+}
+
+/// TODO
+#[derive(Debug)]
+pub enum FormatParseError {
+    /// TODO
+    Error,
+}
+
+impl<'a> IntoIterator for Strftime<'a> {
+    type Item = Item<'a>;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.items.into_iter()
     }
 }
 
